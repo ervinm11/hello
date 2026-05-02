@@ -12,13 +12,33 @@ body {
   overflow-x: hidden;
 }
 
-/* HEADER */
+.cats {
+  text-align: center;
+  margin-top: 10px;
+  color: #2f2f2f;
+}
+
+.cats h3 {
+  margin: 5px;
+  font-size: 18px;
+}
+
+.cats p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #7FB77E, #F7C8E0, #A8D8EA);
+  overflow-x: hidden;
+}
+
 header {
   text-align: center;
   padding: 20px;
 }
 
-/* MENU */
 .menu {
   display: flex;
   justify-content: center;
@@ -27,31 +47,75 @@ header {
 }
 
 .card {
-  background: white;
+  background: rgba(255,255,255,0.9);
   border-radius: 20px;
   padding: 20px;
   width: 220px;
   text-align: center;
   cursor: pointer;
   transition: 0.3s;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 .card:hover {
   transform: scale(1.05);
 }
 
-/* BUTTON */
 button {
-  margin: 10px;
+  margin: 8px;
   padding: 10px 15px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #7FB77E;
   color: white;
   cursor: pointer;
+  transition: 0.2s;
 }
 
-/* MODAL */
+button:hover {
+  opacity: 0.85;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 10px;
+}
+
+.notes-panel {
+  width: 320px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  backdrop-filter: blur(8px);
+}
+
+.notes-panel h3 {
+  margin-top: 0;
+}
+
+.note-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 8px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.note-item button {
+  background: crimson;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -77,7 +141,6 @@ button {
   cursor: pointer;
 }
 
-/* PETALS */
 .petal {
   position: fixed;
   top: -10px;
@@ -89,9 +152,7 @@ button {
 }
 
 @keyframes fall {
-  to {
-    transform: translateY(100vh);
-  }
+  to { transform: translateY(100vh); }
 }
 </style>
 </head>
@@ -102,6 +163,11 @@ button {
   <h1>🍵 Matcha Café</h1>
   <p>A little space for you</p>
 </header>
+
+<div class="cats">
+  <h3>🐾 Haru & Hiro</h3>
+  <p>Her cats — Haru and Hiro. Soft little companions in her world.</p>
+</div>
 
 <section class="menu">
   <div class="card" onclick="showNote('latte')">🍵 Matcha Latte</div>
@@ -116,7 +182,13 @@ button {
   <button onclick="toggleMusic()">🎵 Music</button>
 </div>
 
-<!-- MODAL -->
+<div class="container">
+  <div class="notes-panel">
+    <h3>💌 Your Notes</h3>
+    <div id="notesList"></div>
+  </div>
+</div>
+
 <div class="modal" id="modal">
   <div class="receipt">
     <div class="close" onclick="closeNote()">X</div>
@@ -124,40 +196,38 @@ button {
   </div>
 </div>
 
-<!-- MUSIC -->
 <audio id="music" loop>
-  <!-- Replace with your own mp3 file -->
   <source src="tenerife-sea.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-
-/* DEFAULT NOTES */
 let notes = {
   latte: ["You make my days feel softer."],
   strawberry: ["You're really cute."],
   blue: ["Random thought: you crossed my mind again."]
 };
 
-/* LOAD SAVED NOTES */
 if (localStorage.getItem("notes")) {
   notes = JSON.parse(localStorage.getItem("notes"));
 }
 
-/* SHOW NOTE */
+function save() {
+  localStorage.setItem("notes", JSON.stringify(notes));
+  renderNotes();
+}
+
 function showNote(type) {
-  const random = notes[type][Math.floor(Math.random() * notes[type].length)];
+  const list = notes[type];
+  const random = list[Math.floor(Math.random() * list.length)];
   displayReceipt(random);
 }
 
-/* DAILY SPECIAL */
 function dailySpecial() {
   const all = [...notes.latte, ...notes.strawberry, ...notes.blue];
   const random = all[Math.floor(Math.random() * all.length)];
   displayReceipt("Daily Special\n\n" + random);
 }
 
-/* DISPLAY */
 function displayReceipt(msg) {
   document.getElementById("receiptText").innerText =
 `MATCHA CAFÉ
@@ -165,7 +235,6 @@ function displayReceipt(msg) {
 ${msg}
 ----------------
 Made with care 🍵`;
-
   document.getElementById("modal").style.display = "flex";
 }
 
@@ -173,34 +242,49 @@ function closeNote() {
   document.getElementById("modal").style.display = "none";
 }
 
-/* ADD NOTE */
 function addNote() {
   const type = prompt("Category: latte / strawberry / blue");
   const text = prompt("Write your note:");
 
   if (notes[type] && text) {
     notes[type].push(text);
-    localStorage.setItem("notes", JSON.stringify(notes));
+    save();
     alert("Saved!");
   }
 }
 
-/* MUSIC */
+function deleteNote(type, index) {
+  notes[type].splice(index, 1);
+  save();
+}
+
+function renderNotes() {
+  const container = document.getElementById("notesList");
+  container.innerHTML = "";
+
+  Object.keys(notes).forEach(type => {
+    notes[type].forEach((note, i) => {
+      const div = document.createElement("div");
+      div.className = "note-item";
+      div.innerHTML = `
+        <span>${note}</span>
+        <button onclick="deleteNote('${type}', ${i})">X</button>
+      `;
+      container.appendChild(div);
+    });
+  });
+}
+
 let playing = false;
 function toggleMusic() {
   const music = document.getElementById("music");
-  if (!playing) {
-    music.play();
-  } else {
-    music.pause();
-  }
+  if (!playing) music.play();
+  else music.pause();
   playing = !playing;
 }
 
-/* SECRET NOTE */
 function unlockSecret() {
   const code = prompt("Enter secret code:");
-
   if (code === "matcha") {
     displayReceipt("This one is special.\n\nI really, really like you.");
   } else {
@@ -208,19 +292,17 @@ function unlockSecret() {
   }
 }
 
-/* PETALS */
 function createPetal() {
   const petal = document.createElement("div");
   petal.classList.add("petal");
   petal.style.left = Math.random() * window.innerWidth + "px";
   petal.style.animationDuration = (Math.random() * 3 + 2) + "s";
   document.body.appendChild(petal);
-
   setTimeout(() => petal.remove(), 5000);
 }
 
 setInterval(createPetal, 300);
-
+renderNotes();
 </script>
 
 </body>
