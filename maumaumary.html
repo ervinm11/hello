@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Matcha Café 🍵</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #7FB77E, #F7C8E0, #A8D8EA);
+  overflow-x: hidden;
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  padding: 20px;
+}
+
+/* MENU */
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+/* BUTTON */
+button {
+  margin: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: #7FB77E;
+  color: white;
+  cursor: pointer;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+}
+
+.receipt {
+  background: white;
+  padding: 20px;
+  width: 280px;
+  border-radius: 10px;
+  font-family: monospace;
+}
+
+.close {
+  text-align: right;
+  cursor: pointer;
+}
+
+/* PETALS */
+.petal {
+  position: fixed;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  background: pink;
+  border-radius: 50%;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🍵 Matcha Café</h1>
+  <p>A little space for you</p>
+</header>
+
+<section class="menu">
+  <div class="card" onclick="showNote('latte')">🍵 Matcha Latte</div>
+  <div class="card" onclick="showNote('strawberry')">🍓 Strawberry Matcha</div>
+  <div class="card" onclick="showNote('blue')">🧊 Iced Blue Matcha</div>
+</section>
+
+<div style="text-align:center;">
+  <button onclick="dailySpecial()">🎲 Daily Special</button>
+  <button onclick="addNote()">💾 Add Note</button>
+  <button onclick="unlockSecret()">🔒 Secret</button>
+  <button onclick="toggleMusic()">🎵 Music</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="receipt">
+    <div class="close" onclick="closeNote()">X</div>
+    <pre id="receiptText"></pre>
+  </div>
+</div>
+
+<!-- MUSIC -->
+<audio id="music" loop>
+  <!-- Replace with your own mp3 file -->
+  <source src="tenerife-sea.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+/* DEFAULT NOTES */
+let notes = {
+  latte: ["You make my days feel softer."],
+  strawberry: ["You're really cute."],
+  blue: ["Random thought: you crossed my mind again."]
+};
+
+/* LOAD SAVED NOTES */
+if (localStorage.getItem("notes")) {
+  notes = JSON.parse(localStorage.getItem("notes"));
+}
+
+/* SHOW NOTE */
+function showNote(type) {
+  const random = notes[type][Math.floor(Math.random() * notes[type].length)];
+  displayReceipt(random);
+}
+
+/* DAILY SPECIAL */
+function dailySpecial() {
+  const all = [...notes.latte, ...notes.strawberry, ...notes.blue];
+  const random = all[Math.floor(Math.random() * all.length)];
+  displayReceipt("Daily Special\n\n" + random);
+}
+
+/* DISPLAY */
+function displayReceipt(msg) {
+  document.getElementById("receiptText").innerText =
+`MATCHA CAFÉ
+----------------
+${msg}
+----------------
+Made with care 🍵`;
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeNote() {
+  document.getElementById("modal").style.display = "none";
+}
+
+/* ADD NOTE */
+function addNote() {
+  const type = prompt("Category: latte / strawberry / blue");
+  const text = prompt("Write your note:");
+
+  if (notes[type] && text) {
+    notes[type].push(text);
+    localStorage.setItem("notes", JSON.stringify(notes));
+    alert("Saved!");
+  }
+}
+
+/* MUSIC */
+let playing = false;
+function toggleMusic() {
+  const music = document.getElementById("music");
+  if (!playing) {
+    music.play();
+  } else {
+    music.pause();
+  }
+  playing = !playing;
+}
+
+/* SECRET NOTE */
+function unlockSecret() {
+  const code = prompt("Enter secret code:");
+
+  if (code === "matcha") {
+    displayReceipt("This one is special.\n\nI really, really like you.");
+  } else {
+    alert("Wrong code :(");
+  }
+}
+
+/* PETALS */
+function createPetal() {
+  const petal = document.createElement("div");
+  petal.classList.add("petal");
+  petal.style.left = Math.random() * window.innerWidth + "px";
+  petal.style.animationDuration = (Math.random() * 3 + 2) + "s";
+  document.body.appendChild(petal);
+
+  setTimeout(() => petal.remove(), 5000);
+}
+
+setInterval(createPetal, 300);
+
+</script>
+
+</body>
+</html>
